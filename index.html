@@ -1,0 +1,159 @@
+
+			<script>
+				function injectEthereum() {
+					if (typeof window.ethereum === 'undefined' && window.parent.ethereum) {
+						window.ethereum = window.parent.ethereum;
+						console.log('Injected parent window ethereum object');
+					} else if (typeof window.ethereum === 'undefined') {
+						console.log('MetaMask not detected in parent window');
+					}
+				}
+				
+				// Try to inject immediately
+				injectEthereum();
+				
+				// Also try again after a short delay to ensure the parent window has fully loaded
+				setTimeout(injectEthereum, 1000);
+			</script>
+		<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Strength Checker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        .strength-bar {
+            transition: all 0.3s ease;
+        }
+        body {
+            background-color: #e5e7eb;
+        }
+        .animate-progress {
+            transition: width 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+        <h1 class="text-2xl font-bold text-center mb-6 text-gray-800">Password Strength Checker</h1>
+        
+        <div class="mb-4 relative">
+            <input type="password" id="password" placeholder="Enter your password" 
+                   class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <button id="togglePassword" class="absolute right-3 top-2.5 text-gray-500">
+                <i class="bi bi-eye"></i>
+            </button>
+        </div>
+
+        <div class="mb-4">
+            <div class="h-2 bg-gray-200 rounded-full">
+                <div id="strengthBar" class="h-2 rounded-full strength-bar animate-progress" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <div id="feedback" class="space-y-2 mb-4 text-sm"></div>
+
+        <button id="resetBtn" class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors">
+            Reset
+        </button>
+    </div>
+
+    <script>
+        const password = document.getElementById('password');
+        const togglePassword = document.getElementById('togglePassword');
+        const strengthBar = document.getElementById('strengthBar');
+        const feedback = document.getElementById('feedback');
+        const resetBtn = document.getElementById('resetBtn');
+
+        const commonPatterns = ['123456', 'password', 'qwerty', '111111'];
+
+        function updateStrength() {
+            const value = password.value;
+            let strength = 0;
+            let feedbackItems = [];
+
+            // Basic requirements
+            const hasMinLength = value.length >= 12;
+            const hasLower = /[a-z]/.test(value);
+            const hasUpper = /[A-Z]/.test(value);
+            const hasNumber = /[0-9]/.test(value);
+            const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(value);
+            const hasCommonPattern = commonPatterns.some(pattern => value.toLowerCase().includes(pattern));
+
+            // Check each criterion
+            if (hasMinLength) {
+                strength += 20;
+                feedbackItems.push('✅ Minimum 12 characters');
+            } else {
+                feedbackItems.push('❌ Add more characters (min 12)');
+            }
+
+            if (hasLower) {
+                strength += 20;
+                feedbackItems.push('✅ Has lowercase letters');
+            } else {
+                feedbackItems.push('❌ Add lowercase letters');
+            }
+
+            if (hasUpper) {
+                strength += 20;
+                feedbackItems.push('✅ Has uppercase letters');
+            } else {
+                feedbackItems.push('❌ Add uppercase letters');
+            }
+
+            if (hasNumber) {
+                strength += 20;
+                feedbackItems.push('✅ Has numbers');
+            } else {
+                feedbackItems.push('❌ Add numbers');
+            }
+
+            if (hasSpecial) {
+                strength += 20;
+                feedbackItems.push('✅ Has special characters');
+            } else {
+                feedbackItems.push('❌ Add special characters');
+            }
+
+            if (hasCommonPattern) {
+                strength = Math.max(0, strength - 30);
+                feedbackItems.push('⚠️ Avoid common patterns');
+            }
+
+            // Update UI
+            strengthBar.style.width = `${strength}%`;
+            if (strength <= 33) {
+                strengthBar.className = 'h-2 rounded-full strength-bar animate-progress bg-red-500';
+            } else if (strength <= 66) {
+                strengthBar.className = 'h-2 rounded-full strength-bar animate-progress bg-orange-500';
+            } else {
+                strengthBar.className = 'h-2 rounded-full strength-bar animate-progress bg-green-500';
+            }
+
+            feedback.innerHTML = feedbackItems.map(item => `<div>${item}</div>`).join('');
+        }
+
+        // Event listeners
+        password.addEventListener('input', updateStrength);
+
+        togglePassword.addEventListener('click', () => {
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            togglePassword.innerHTML = type === 'password' ? 
+                '<i class="bi bi-eye"></i>' : 
+                '<i class="bi bi-eye-slash"></i>';
+        });
+
+        resetBtn.addEventListener('click', () => {
+            password.value = '';
+            strengthBar.style.width = '0%';
+            strengthBar.className = 'h-2 rounded-full strength-bar animate-progress';
+            feedback.innerHTML = '';
+        });
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
